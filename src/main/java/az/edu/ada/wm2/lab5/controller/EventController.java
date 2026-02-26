@@ -145,6 +145,9 @@ public class EventController {
     public ResponseEntity<Event> updateEventPrice(
             @PathVariable UUID id,
             @RequestParam BigDecimal price) {
+        if (price == null || price.compareTo(BigDecimal.ZERO) < 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         try {
             Event updatedEvent = eventService.updateEventPrice(id, price);
