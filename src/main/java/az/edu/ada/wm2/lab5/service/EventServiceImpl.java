@@ -85,27 +85,45 @@ public class EventServiceImpl implements EventService {
     // Custom methods
     @Override
     public List<Event> getEventsByTag(String tag) {
-        return List.of();
+        return eventRepository.findAll().stream()
+                .filter(event -> event.getTags() != null && event.getTags().contains(tag))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Event> getUpcomingEvents() {
-        return List.of();
+        LocalDateTime now = LocalDateTime.now();
+
+        return eventRepository.findAll().stream()
+                .filter(event -> event.getEventDateTime() != null && event.getEventDateTime().isAfter(now))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Event> getEventsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
-       return List.of();
+        return eventRepository.findAll().stream()
+                .filter(event -> event.getTicketPrice() != null &&
+                        event.getTicketPrice().compareTo(minPrice) >= 0 &&
+                        event.getTicketPrice().compareTo(maxPrice) <= 0)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Event> getEventsByDateRange(LocalDateTime start, LocalDateTime end) {
-        return List.of();
+        return eventRepository.findAll().stream()
+                .filter(event -> event.getEventDateTime() != null &&
+                        (event.getEventDateTime().isEqual(start) || event.getEventDateTime().isAfter(start)) &&
+                        (event.getEventDateTime().isEqual(end) || event.getEventDateTime().isBefore(end)))
+                .collect(Collectors.toList());
     }
 
     @Override
     public Event updateEventPrice(UUID id, BigDecimal newPrice) {
-        return null;
-    }
+            Event event = eventRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("not found"));
 
+            event.setTicketPrice(newPrice);
+
+            return eventRepository.save(event);
+    }
 }
